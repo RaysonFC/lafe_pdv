@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lafé – Cantina</title>
+  <meta name="description" content="Sistema de caixa da Cantina Lafé">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Lafé">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <div class="logo">Laf<span>é</span></div>
+  <div class="header-right">
+    <nav>
+      <button id="btn-pdv" class="active" onclick="goTo('pdv')">● PDV</button>
+      <button id="btn-estoque" onclick="tryAccess('estoque')">Estoque <span class="nav-lock">🔒</span></button>
+      <button id="btn-vendas"  onclick="tryAccess('vendas')">Vendas <span class="nav-lock">🔒</span></button>
+    </nav>
+    <button class="icon-btn" onclick="toggleFontPanel()" title="Tamanho da fonte">𝐀</button>
+    <div class="font-panel" id="font-panel">
+      <div class="font-panel-title">Tamanho da Fonte</div>
+      <div class="slider-row">
+        <span>A</span>
+        <input type="range" id="font-slider" min="12" max="22" value="16" oninput="setFontSize(this.value)">
+        <span style="font-size:1.2em">A</span>
+        <span class="font-val" id="font-val">16px</span>
+      </div>
+      <div class="preset-row">
+        <button class="preset-btn" onclick="setFontSize(13)">Pequena</button>
+        <button class="preset-btn active" onclick="setFontSize(16)">Normal</button>
+        <button class="preset-btn" onclick="setFontSize(19)">Grande</button>
+        <button class="preset-btn" onclick="setFontSize(22)">Máx</button>
+      </div>
+    </div>
+    <button class="icon-btn icon-btn--gear" onclick="openConfig()" title="Configurações">⚙️</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══ PDV ══ -->
+  <div class="view active" id="view-pdv">
+    <div class="pdv-layout">
+      <div>
+        <div style="display:flex;gap:12px;margin-bottom:12px;align-items:center;flex-wrap:wrap;">
+          <div class="section-title" style="margin:0;flex:1;">Produtos</div>
+          <input type="text" id="pdv-search" placeholder="Buscar produto…" style="max-width:230px;" oninput="renderPDV()">
+        </div>
+        <div class="cat-filter" id="pdv-cats"></div>
+        <div class="pdv-products" id="pdv-grid"></div>
+      </div>
+      <div>
+        <div class="cart-panel">
+          <div class="cart-title">🛒 Pedido</div>
+          <div class="cart-items" id="cart-items"></div>
+          <div class="cart-total">
+            <div class="cart-total-label">Total</div>
+            <div class="cart-total-value" id="cart-total">R$ 0,00</div>
+          </div>
+          <div class="pay-label">Forma de Pagamento</div>
+          <div class="payment-methods">
+            <button class="pay-btn selected" id="pay-dinheiro" onclick="selectPay('dinheiro')">💵 Dinheiro</button>
+            <button class="pay-btn pix-btn"  id="pay-pix"     onclick="selectPay('pix')">📱 Pix / QR</button>
+          </div>
+          <div id="troco-area">
+            <div class="form-group" style="margin:0;">
+              <label>Valor recebido</label>
+              <input type="number" id="valor-recebido" placeholder="0,00" step="0.01" min="0" oninput="calcTroco()">
+            </div>
+            <div id="troco-result" style="color:var(--gold);font-size:.9em;margin-top:6px;min-height:20px;"></div>
+          </div>
+          <div class="qr-inline-area" id="qr-inline-area">
+            <div class="qr-inline-label">📱 Escaneie para pagar</div>
+            <div class="qr-wrap" id="qr-inline-wrap"></div>
+            <div class="qr-pix-key" id="qr-pix-key-label"></div>
+            <div class="qr-pix-valor" id="qr-pix-valor"></div>
+          </div>
+          <button class="btn-finalizar" id="btn-finalizar" onclick="finalizarVenda()" disabled>Finalizar Venda</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ESTOQUE ══ -->
+  <div class="view" id="view-estoque">
+    <div class="section-title">Gerenciar Estoque</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">
+      <div class="form-panel">
+        <div class="form-title">➕ Novo Produto</div>
+        <div class="form-group"><label>Nome do Produto</label><input type="text" id="p-nome" placeholder="Ex: Café Expresso"></div>
+        <div class="form-row">
+          <div class="form-group" style="margin:0;"><label>Preço (R$)</label><input type="number" id="p-preco" placeholder="0,00" step="0.01" min="0"></div>
+          <div class="form-group" style="margin:0;"><label>Estoque Inicial</label><input type="number" id="p-estoque" placeholder="0" min="0"></div>
+        </div>
+        <div class="form-group"><label>Categoria</label><input type="text" id="p-categoria" placeholder="Bebidas, Salgados, Doces…"></div>
+        <button class="btn-primary" onclick="salvarProduto()">Salvar Produto</button>
+      </div>
+      <div>
+        <input type="text" id="est-search" placeholder="Buscar produto…" style="width:100%;margin-bottom:16px;" oninput="renderEstoque()">
+        <div class="cards-grid" id="estoque-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VENDAS ══ -->
+  <div class="view" id="view-vendas">
+    <div class="summary-cards" id="summary-cards"></div>
+    <div class="section-title">Histórico de Vendas</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Data / Hora</th><th>Itens</th><th>Pagamento</th><th>Total</th></tr></thead>
+        <tbody id="sales-tbody"></tbody>
+      </table>
+      <div id="no-sales" style="text-align:center;padding:40px;color:var(--cream-dim);display:none;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.5em;color:var(--gold-dim);">Nenhuma venda registrada</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;text-align:right;">
+      <button class="btn-sm btn-del" onclick="limparVendas()">Limpar Histórico</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ MODAL CONFIGURAÇÕES ══ -->
+<div class="modal-bg" id="config-modal">
+  <div class="modal-box" style="max-width:460px;text-align:left;">
+    <div class="modal-title" style="text-align:center;margin-bottom:20px;">⚙️ Configurações</div>
+
+    <div class="cfg-tabs">
+      <button class="cfg-tab active" id="tab-pix"     onclick="switchTab('pix')">💳 Chave Pix</button>
+      <button class="cfg-tab"        id="tab-senha"   onclick="switchTab('senha')">🔑 Senha</button>
+      <button class="cfg-tab"        id="tab-instalar" onclick="switchTab('instalar')">📲 Instalar</button>
+    </div>
+
+    <!-- TAB PIX -->
+    <div class="cfg-body" id="cfg-pix">
+      <p style="color:var(--cream-dim);font-size:.82em;line-height:1.6;margin-bottom:16px;">
+        Cole o código <strong style="color:var(--gold)">Pix Copia e Cola</strong> do seu banco. Ele gera o QR code na venda.
+      </p>
+      <div class="form-group">
+        <label>Chave / E-mail (exibição)</label>
+        <input type="text" id="cfg-pix-key" placeholder="email@exemplo.com">
+      </div>
+      <div class="form-group">
+        <label>Nome do recebedor</label>
+        <input type="text" id="cfg-pix-nome" placeholder="Nome que aparece no QR">
+      </div>
+      <div class="form-group">
+        <label>Código Pix Copia e Cola (completo)</label>
+        <textarea id="cfg-pix-data" rows="4" style="background:var(--black);border:1px solid var(--border);color:var(--cream);padding:10px 14px;font-family:'Josefin Sans',sans-serif;font-size:.8em;outline:none;resize:vertical;width:100%;transition:border-color .2s;line-height:1.5;" placeholder="00020126440014br.gov.bcb.pix…" onfocus="this.style.borderColor='var(--gold-dim)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+      <button class="btn-primary" style="width:100%;" onclick="salvarPix()">💾 Salvar Pix</button>
+    </div>
+
+    <!-- TAB SENHA -->
+    <div class="cfg-body" id="cfg-senha" style="display:none;">
+      <!-- sem senha -->
+      <div id="cfg-sem-senha">
+        <div style="text-align:center;padding:16px 0 20px;">
+          <div style="font-size:2.5em;margin-bottom:10px;">🔓</div>
+          <div style="color:var(--cream-dim);font-size:.85em;margin-bottom:20px;">Nenhuma senha cadastrada.<br>Estoque e Vendas estão desprotegidos.</div>
+          <button class="btn-primary" style="width:100%;" onclick="cfgIniciarSenha(false)">Criar Senha de 4 Dígitos</button>
+        </div>
+      </div>
+      <!-- com senha -->
+      <div id="cfg-com-senha" style="display:none;">
+        <div style="text-align:center;padding:10px 0 18px;">
+          <div style="font-size:2.5em;margin-bottom:10px;">🔒</div>
+          <div style="color:var(--gold);font-size:.85em;margin-bottom:20px;">Senha ativa — Estoque e Vendas protegidos.</div>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-bottom:10px;" onclick="cfgIniciarSenha(true)">🔄 Trocar Senha</button>
+        <button class="btn-sm btn-del" style="width:100%;text-align:center;" onclick="cfgRemoverSenha()">🗑️ Remover Senha</button>
+      </div>
+      <!-- numpad criar/trocar -->
+      <div id="cfg-criar-senha" style="display:none;">
+        <div class="setup-badge" id="cfg-badge-txt">Criar Senha</div>
+        <div class="step-dots"><div class="step-dot on" id="cfg-sdot1"></div><div class="step-dot" id="cfg-sdot2"></div></div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.25em;color:var(--gold);text-align:center;margin-bottom:4px;" id="cfg-senha-title">Nova senha</div>
+        <div style="font-size:.7em;letter-spacing:2px;text-transform:uppercase;color:var(--cream-dim);text-align:center;margin-bottom:14px;" id="cfg-senha-sub">Digite 4 dígitos</div>
+        <div class="lock-dots" id="cfg-dots" style="justify-content:center;margin-bottom:14px;">
+          <div class="lock-dot"></div><div class="lock-dot"></div><div class="lock-dot"></div><div class="lock-dot"></div>
+        </div>
+        <div class="lock-err" id="cfg-pin-err" style="text-align:center;min-height:18px;margin-bottom:8px;"></div>
+        <div class="numpad" id="cfg-numpad"></div>
+        <button class="lock-cancel" style="width:100%;margin-top:10px;" onclick="cfgCancelarSenha()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- TAB INSTALAR -->
+    <div class="cfg-body" id="cfg-instalar" style="display:none;">
+      <div style="text-align:center;padding:12px 0;">
+        <div style="font-size:3em;margin-bottom:12px;">📲</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.3em;color:var(--gold);margin-bottom:10px;">Instalar na Tela Inicial</div>
+        <p style="color:var(--cream-dim);font-size:.82em;line-height:1.7;margin-bottom:20px;">
+          Instale o <strong style="color:var(--gold)">Lafé</strong> como app no celular ou computador.<br>
+          Abre offline, sem precisar do navegador.
+        </p>
+        <button class="btn-primary" style="width:100%;margin-bottom:16px;" id="cfg-install-btn" onclick="cfgDoInstall()">
+          ⬇️ Instalar App Agora
+        </button>
+        <div id="cfg-install-guide" style="background:var(--black);border:1px solid var(--border);padding:16px;text-align:left;font-size:.8em;color:var(--cream-dim);line-height:1.9;display:none;">
+          <div style="color:var(--gold);font-weight:600;margin-bottom:6px;font-size:.9em;letter-spacing:1px;text-transform:uppercase;">Instalar manualmente:</div>
+          <div>📱 <strong style="color:var(--cream)">iPhone (Safari):</strong><br>&nbsp;&nbsp;&nbsp;Compartilhar → Adicionar à Tela de Início</div>
+          <div style="margin-top:8px;">🤖 <strong style="color:var(--cream)">Android (Chrome):</strong><br>&nbsp;&nbsp;&nbsp;3 pontos ⋮ → Adicionar à tela inicial</div>
+          <div style="margin-top:8px;">💻 <strong style="color:var(--cream)">Computador (Chrome/Edge):</strong><br>&nbsp;&nbsp;&nbsp;Ícone ⊕ na barra de endereços</div>
+        </div>
+        <div id="cfg-installed-msg" style="display:none;background:#1a3a1a;border:1px solid #27ae60;padding:12px;color:#2ecc71;font-size:.82em;margin-top:8px;">
+          ✅ App já instalado! Abra pela tela inicial.
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:right;">
+      <button class="btn-close" onclick="closeConfig()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL PIX ══ -->
+<div class="modal-bg" id="pix-modal">
+  <div class="modal-box">
+    <div class="modal-title">✅ Confirmar Pagamento Pix</div>
+    <div class="modal-sub">Verifique o pagamento antes de confirmar</div>
+    <div class="qr-wrap" id="qr-modal-wrap" style="margin-bottom:10px;"></div>
+    <div class="modal-pix-key" id="modal-pix-key-label"></div>
+    <div class="modal-total" id="pix-total-display"></div>
+    <div>
+      <button class="btn-close"   onclick="closePixModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="confirmarPix()">Confirmar Recebimento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL EDITAR PRODUTO ══ -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal-box" style="max-width:400px;text-align:left;">
+    <div class="modal-title" style="text-align:center;">✏️ Editar Produto</div>
+    <div class="form-group" style="margin-top:16px;"><label>Nome</label><input type="text" id="em-nome"></div>
+    <div class="form-row">
+      <div class="form-group" style="margin:0;"><label>Preço (R$)</label><input type="number" id="em-preco" step="0.01"></div>
+      <div class="form-group" style="margin:0;"><label>Estoque</label><input type="number" id="em-estoque"></div>
+    </div>
+    <div class="form-group"><label>Categoria</label><input type="text" id="em-categoria"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn-close"   onclick="closeEditModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="salvarEdicao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL SENHA (acesso) ══ -->
+<div class="modal-bg" id="lock-modal">
+  <div class="lock-box">
+    <div id="ls-nopass">
+      <div class="lock-icon">🔐</div>
+      <div class="lock-title">Área Restrita</div>
+      <div class="lock-sub">Sem senha cadastrada</div>
+      <p style="color:var(--cream-dim);font-size:.86em;line-height:1.7;margin-bottom:22px;">
+        Configure uma senha de 4 dígitos em <strong style="color:var(--gold)">Configurações ⚙️</strong>.
+      </p>
+      <button class="btn-primary" style="width:100%;" onclick="closeLock();openConfig('senha')">Ir para Configurações</button>
+      <div style="margin-top:10px;"><button class="lock-cancel" onclick="closeLock()">Cancelar</button></div>
+    </div>
+    <div id="ls-enter" style="display:none;">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Área Restrita</div>
+      <div class="lock-sub">Digite sua senha de 4 dígitos</div>
+      <div class="lock-dots" id="dots-enter">
+        <div class="lock-dot"></div><div class="lock-dot"></div>
+        <div class="lock-dot"></div><div class="lock-dot"></div>
+      </div>
+      <div class="lock-err" id="enter-err"></div>
+      <div class="numpad" id="numpad-enter"></div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <button class="lock-cancel" onclick="closeLock()">Cancelar</button>
+        <button class="lock-cancel" style="color:var(--gold-dim);font-size:.68em;" onclick="closeLock();openConfig('senha')">Esqueci minha senha</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BANNER INSTALAR ══ -->
+<div class="install-banner" id="install-banner">
+  <p>📲 Instale o <strong>Lafé</strong> na sua tela inicial para usar offline!</p>
+  <div class="install-btn-row">
+    <button class="install-btn" onclick="doInstall()">Instalar App</button>
+    <button class="dismiss-btn" onclick="dismissInstall()">Agora não</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./qr.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
