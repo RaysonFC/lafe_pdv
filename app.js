@@ -387,16 +387,7 @@ function renderCart() {
     }).join('');
   }
   var total = totalCart();
-  var totalEl = document.getElementById('cart-total');
-  var prevTotal = totalEl._lastTotal;
-  totalEl.textContent = fmt(total);
-  if (prevTotal !== undefined && total !== prevTotal && cart.length > 0) {
-    totalEl.classList.remove('pulse');
-    void totalEl.offsetWidth; /* reflow para reiniciar animação */
-    totalEl.classList.add('pulse');
-    totalEl.addEventListener('animationend', function () { totalEl.classList.remove('pulse'); }, { once: true });
-  }
-  totalEl._lastTotal = total;
+  document.getElementById('cart-total').textContent = fmt(total);
   document.getElementById('btn-finalizar').disabled = cart.length === 0;
   if (payMethod === 'pix') updatePixValor();
   calcTroco();
@@ -620,12 +611,21 @@ if ('serviceWorker' in navigator) {
 
 /* ── FECHAR PAINÉIS AO CLICAR FORA ── */
 document.addEventListener('click', function (e) {
+  /* Painel de fonte: fecha ao clicar fora */
   var panel = document.getElementById('font-panel');
   var btn   = document.querySelector('.icon-btn');
   if (panel && !panel.contains(e.target) && btn && !btn.contains(e.target) &&
       !e.target.classList.contains('icon-btn')) {
     panel.classList.remove('open');
   }
+
+  /* Modais: fecha ao clicar direto no overlay escuro (modal-bg) */
+  if (!e.target.classList.contains('modal-bg')) return;
+  var id = e.target.id;
+  if (id === 'config-modal') { closeConfig(); }
+  if (id === 'edit-modal')   { closeEditModal(); }
+  if (id === 'lock-modal')   { closeLock(); }
+  /* Modal Pix: não fecha ao clicar fora — evita encerrar pagamento por acidente */
 });
 
 /* ════════════════════════════════════════════
