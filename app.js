@@ -409,6 +409,11 @@ function selectPay(m) {
   document.getElementById('pay-dinheiro').classList.toggle('selected', m === 'dinheiro');
   document.getElementById('pay-pix').classList.toggle('selected', m === 'pix');
   document.getElementById('troco-area').style.display = m === 'dinheiro' ? 'block' : 'none';
+
+  /* Limpa valor recebido e troco ao trocar forma de pagamento */
+  document.getElementById('valor-recebido').value = '';
+  document.getElementById('troco-result').textContent = '';
+
   var qrArea = document.getElementById('qr-inline-area');
   if (m === 'pix') {
     qrArea.classList.add('show');
@@ -611,21 +616,12 @@ if ('serviceWorker' in navigator) {
 
 /* ── FECHAR PAINÉIS AO CLICAR FORA ── */
 document.addEventListener('click', function (e) {
-  /* Painel de fonte: fecha ao clicar fora */
   var panel = document.getElementById('font-panel');
   var btn   = document.querySelector('.icon-btn');
   if (panel && !panel.contains(e.target) && btn && !btn.contains(e.target) &&
       !e.target.classList.contains('icon-btn')) {
     panel.classList.remove('open');
   }
-
-  /* Modais: fecha ao clicar direto no overlay escuro (modal-bg) */
-  if (!e.target.classList.contains('modal-bg')) return;
-  var id = e.target.id;
-  if (id === 'config-modal') { closeConfig(); }
-  if (id === 'edit-modal')   { closeEditModal(); }
-  if (id === 'lock-modal')   { closeLock(); }
-  /* Modal Pix: não fecha ao clicar fora — evita encerrar pagamento por acidente */
 });
 
 /* ════════════════════════════════════════════
