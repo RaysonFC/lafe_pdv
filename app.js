@@ -387,7 +387,16 @@ function renderCart() {
     }).join('');
   }
   var total = totalCart();
-  document.getElementById('cart-total').textContent = fmt(total);
+  var totalEl = document.getElementById('cart-total');
+  var prevTotal = totalEl._lastTotal;
+  totalEl.textContent = fmt(total);
+  if (prevTotal !== undefined && total !== prevTotal && cart.length > 0) {
+    totalEl.classList.remove('pulse');
+    void totalEl.offsetWidth; /* reflow para reiniciar animação */
+    totalEl.classList.add('pulse');
+    totalEl.addEventListener('animationend', function () { totalEl.classList.remove('pulse'); }, { once: true });
+  }
+  totalEl._lastTotal = total;
   document.getElementById('btn-finalizar').disabled = cart.length === 0;
   if (payMethod === 'pix') updatePixValor();
   calcTroco();
