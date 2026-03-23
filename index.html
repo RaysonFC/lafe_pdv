@@ -24,7 +24,7 @@
 <body>
 
   <header>
-    <div class="logo">La<span>Fé</span></div>
+    <div class="logo">Laf<span>é</span></div>
     <div class="header-right">
       <nav>
         <button id="btn-pdv" class="active" onclick="goTo('pdv')">● PDV</button>
@@ -40,7 +40,7 @@
         <div class="font-panel-title">Tamanho da Fonte</div>
         <div class="slider-row">
           <span>A</span>
-          <input type="range" id="font-slider" min="12" max="30" value="16" oninput="setFontSize(this.value)">
+          <input type="range" id="font-slider" min="12" max="22" value="16" oninput="setFontSize(this.value)">
           <span style="font-size:1.2em">A</span>
           <span class="font-val" id="font-val">16px</span>
         </div>
@@ -49,7 +49,6 @@
           <button class="preset-btn active" onclick="setFontSize(16)">Normal</button>
           <button class="preset-btn" onclick="setFontSize(19)">Grande</button>
           <button class="preset-btn" onclick="setFontSize(22)">Máx</button>
-          <button class="preset-btn" onclick="setFontSize(30)">Máx</button>
         </div>
       </div>
       <button class="icon-btn icon-btn--gear" onclick="openConfig()" title="Configurações">
