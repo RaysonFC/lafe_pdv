@@ -651,3 +651,25 @@ setFontSize(parseInt(localStorage.getItem('lafe_font') || '16', 10));
 updatePixLabels();
 renderPDV();
 renderCart();
+
+/* ── ESCONDER LOADING ── */
+(function () {
+  var MIN_DISPLAY = 1400; /* ms mínimo para o loading aparecer */
+  var start = Date.now();
+  function hideLoading() {
+    var elapsed = Date.now() - start;
+    var delay = Math.max(0, MIN_DISPLAY - elapsed);
+    setTimeout(function () {
+      var el = document.getElementById('app-loading');
+      if (el) {
+        el.classList.add('hidden');
+        setTimeout(function () { el.remove(); }, 500);
+      }
+    }, delay);
+  }
+  if (document.readyState === 'complete') {
+    hideLoading();
+  } else {
+    window.addEventListener('load', hideLoading);
+  }
+})();
