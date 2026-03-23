@@ -98,9 +98,11 @@ nav button:hover, nav button.active {
   transition: all 0.2s;
   flex-shrink: 0;
   line-height: 1;
+  padding: 0;
 }
+.icon-btn svg { display: block; flex-shrink: 0; }
 .icon-btn:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
-.icon-btn--gear { font-size: 1.15rem; }
+.icon-btn--gear { font-size: 1rem; }
 
 /* ── FONT PANEL ── */
 .font-panel {
@@ -169,15 +171,6 @@ main { padding: 24px 32px; }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: none; }
-}
-
-@keyframes cartPulse {
-  0%   { transform: scale(1);    color: var(--gold); }
-  40%  { transform: scale(1.18); color: var(--gold-light); }
-  100% { transform: scale(1);    color: var(--gold); }
-}
-.cart-total-value.pulse {
-  animation: cartPulse 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
 .section-title {
